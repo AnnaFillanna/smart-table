@@ -32,12 +32,17 @@ const skip = (state.page - 1) * pageSize;
         // @todo: #2.4 — получить список видимых страниц и вывести их
       
         const visiblePages = getPages(state.page, pageCount, 5);
-        const pageButtons = visiblePages.map((page) => {
-            const button = pageTemplate.cloneNode(true);
-           button.querySelector('input').value = page;
-            button.querySelector('span').textContent = page;
-           return button;
-        });
+       const pageButtons = visiblePages.map((page) => {
+    const button = pageTemplate.cloneNode(true);
+    const input = button.querySelector('input');
+
+    input.value = page;
+    input.checked = page === state.page;
+
+    button.querySelector('span').textContent = page;
+
+    return button;
+});
         pages.replaceChildren(...pageButtons);
 
         // @todo: #2.5 — обновить статус пагинации

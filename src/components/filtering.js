@@ -1,39 +1,48 @@
-import { createComparison, defaultRules } from "../lib/compare.js";
+export function initFiltering(elements) {
+  const updateIndexes = (elements, indexes) => {
+    Object.keys(indexes).forEach((elementName) => {
+      elements[elementName].append(
+        ...Object.values(indexes[elementName]).map((name) => {
+          const el = document.createElement("option");
+          el.textContent = name;
+          el.value = name;
+          return el;
+        })
+      );
+    });
+  };
 
-// #4.3 - настроить компаратор
-const compare = createComparison(defaultRules);
+  const applyFiltering = (query, state, action) => {
+    if (action && action.name === "clear") {
+      const field = action.dataset.field;
+      const input = elements[field];
 
-export function initFiltering(elements, indexes) {
-    // #4.1 - заполнить выпадающий список продавцами
-    Object.values(indexes.sellers).forEach((seller) => {
-        const option = document.createElement("option");
-        option.value = seller;
-        option.textContent = seller;
-        elements.searchBySeller.append(option);
+      if (input) {
+        input.value = "";
+        state[field] = "";
+      }
+    }
+
+    const filter = {};
+
+    Object.keys(elements).forEach((key) => {
+      if (elements[key]) {
+        if (
+          ["INPUT", "SELECT"].includes(elements[key].tagName) &&
+          elements[key].value
+        ) {
+          filter[`filter[${elements[key].name}]`] = elements[key].value;
+        }
+      }
     });
 
-    return (data, state, action) => {
-        // #4.2 - обработать очистку поля
-        if (action && action.name === "clear") {
-            const field = action.dataset.field;
+    return Object.keys(filter).length
+      ? Object.assign({}, query, filter)
+      : query;
+  };
 
-            const input = elements.filter.querySelector(
-                `[name="${field}"]`
-            );
-
-            if (input) {
-                input.value = "";
-                state[field] = "";
-            }
-        }
-const filterState = {
-    ...state,
-    total: [state.totalFrom, state.totalTo],
-};
-
-delete filterState.totalFrom;
-delete filterState.totalTo;
-        // #4.5 - отфильтровать данные
-        return data.filter((item) => compare(item, filterState));
-    };
+  return {
+    updateIndexes,
+    applyFiltering,
+  };
 }

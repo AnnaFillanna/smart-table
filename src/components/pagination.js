@@ -1,55 +1,68 @@
-import {getPages} from "../lib/utils.js";
+import { getPages } from "../lib/utils.js";
 
-export const initPagination = ({pages, fromRow, toRow, totalRows}, createPage) => {
-    // @todo: #2.3 — подготовить шаблон кнопки для страницы и очистить контейнер
-    const pageTemplate = pages.firstElementChild.cloneNode(true);
-    pages.innerHTML = '';
+export const initPagination = ({ pages, fromRow, toRow, totalRows }) => {
+  const pageTemplate = pages.firstElementChild.cloneNode(true);
+  pages.innerHTML = "";
 
+  let pageCount;
 
+  const applyPagination = (query, state, action) => {
+    const limit = Number(state.rowsPerPage) || 10;
+    let page = Number(state.page) || 1;
 
-    return (data, state, action) => {
-        const total = data.length;
-        const pageSize = Number(state.rowsPerPage) || 10;
-        const pageCount = Math.ceil(total / pageSize);
-        state.page = Number(state.page) || 1;
-        
-
-        // @todo: #2.6 — обработать действия
-if (action?.name === 'next') {
-            state.page = Math.min(state.page + 1, pageCount);
-}
-if (action?.name === 'prev') {
-            state.page = Math.max(state.page - 1, 1);
-}
-if (action?.name === 'first') {
-            state.page = 1;
-}
-if (action?.name === 'last') {
-            state.page = pageCount;
-}
-const skip = (state.page - 1) * pageSize;
-
-        // @todo: #2.4 — получить список видимых страниц и вывести их
-      
-        const visiblePages = getPages(state.page, pageCount, 5);
-       const pageButtons = visiblePages.map((page) => {
-    const button = pageTemplate.cloneNode(true);
-    const input = button.querySelector('input');
-
-    input.value = page;
-    input.checked = page === state.page;
-
-    button.querySelector('span').textContent = page;
-
-    return button;
-});
-        pages.replaceChildren(...pageButtons);
-
-        // @todo: #2.5 — обновить статус пагинации
-        fromRow.textContent = skip + 1;
-        toRow.textContent = Math.min(skip + pageSize, total);
-        totalRows.textContent = total;  
-        // @todo: #2.2 — посчитать сколько строк нужно пропустить и получить срез данных
-        return data.slice(skip, skip + pageSize);
+    // бывший @todo #2.6 — обработать действия
+    if (action?.name === "next") {
+      page = Math.min(page + 1, pageCount);
     }
-}
+
+    if (action?.name === "prev") {
+      page = Math.max(page - 1, 1);
+    }
+
+    if (action?.name === "first") {
+      page = 1;
+    }
+
+    if (action?.name === "last") {
+      page = pageCount;
+    }
+
+    return Object.assign({}, query, {
+      limit,
+      page,
+    });
+  };
+
+  const updatePagination = (total, { page, limit }) => {
+    pageCount = Math.ceil(total / limit);
+
+    const skip = (page - 1) * limit;
+
+    // бывший @todo #2.4
+    const visiblePages = getPages(page, pageCount, 5);
+
+    const pageButtons = visiblePages.map((pageNumber) => {
+      const button = pageTemplate.cloneNode(true);
+      const input = button.querySelector("input");
+
+      input.value = pageNumber;
+      input.checked = pageNumber === page;
+
+      button.querySelector("span").textContent = pageNumber;
+
+      return button;
+    });
+
+    pages.replaceChildren(...pageButtons);
+
+    // бывший @todo #2.5
+    fromRow.textContent = skip + 1;
+    toRow.textContent = Math.min(skip + limit, total);
+    totalRows.textContent = total;
+  };
+
+  return {
+    applyPagination,
+    updatePagination,
+  };
+};

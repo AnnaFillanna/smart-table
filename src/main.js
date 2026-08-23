@@ -87,3 +87,4 @@ async function init() {
     searchBySeller: indexes.sellers,
   });
 }
+init().then(render);

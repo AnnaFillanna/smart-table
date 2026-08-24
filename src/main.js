@@ -69,22 +69,39 @@ const applySorting = initSorting(
   sampleTable.container.querySelectorAll('[name="sort"]')
 );
 
-const { applyFiltering, updateIndexes } = initFiltering(
-  sampleTable.filter.elements
+const filter = sampleTable.container.querySelector('[data-name="filter"]');
+
+const filterElements = Object.fromEntries(
+  [...filter.querySelectorAll("input, select")].map((element) => [
+    element.name,
+    element,
+  ])
 );
+
+
+const { applyFiltering, updateIndexes } = initFiltering(filterElements);
 
 const applySearching = initSearching(
   sampleTable.container.querySelector('[name="search"]')
 );
 
 const appRoot = document.querySelector("#app");
+
 appRoot.appendChild(sampleTable.container);
 
 async function init() {
   const indexes = await api.getIndexes();
 
-  updateIndexes(sampleTable.filter.elements, {
-    searchBySeller: indexes.sellers,
-  });
+  updateIndexes(
+    {
+      searchBySeller: sampleTable.container.querySelector(
+        '[data-name="searchBySeller"]'
+      ),
+    },
+    {
+      searchBySeller: indexes.sellers,
+    }
+  );
 }
+
 init().then(render);

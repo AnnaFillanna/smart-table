@@ -17,7 +17,7 @@ export function initSorting(columns) {
       });
     } else {
       const selected = [...columns].find(
-        (column) => column.dataset.value !== "none"
+        (column) => column.dataset.value !== "none",
       );
 
       if (selected) {
@@ -26,13 +26,8 @@ export function initSorting(columns) {
       }
     }
 
-    const sort =
-      field && order !== "none"
-        ? `${field}:${order}`
-        : null;
+    const sort = field && order !== "none" ? `${field}:${order}` : null;
 
-    return sort
-      ? Object.assign({}, query, { sort })
-      : query;
+    return sort ? Object.assign({}, query, { sort }) : query;
   };
 }

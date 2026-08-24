@@ -55,7 +55,7 @@ const sampleTable = initTable(
     before: ["search", "header", "filter"],
     after: ["pagination"],
   },
-  render
+  render,
 );
 
 const { applyPagination, updatePagination } = initPagination({
@@ -66,7 +66,7 @@ const { applyPagination, updatePagination } = initPagination({
 });
 
 const applySorting = initSorting(
-  sampleTable.container.querySelectorAll('[name="sort"]')
+  sampleTable.container.querySelectorAll('[name="sort"]'),
 );
 
 const filter = sampleTable.container.querySelector('[data-name="filter"]');
@@ -75,14 +75,13 @@ const filterElements = Object.fromEntries(
   [...filter.querySelectorAll("input, select")].map((element) => [
     element.name,
     element,
-  ])
+  ]),
 );
-
 
 const { applyFiltering, updateIndexes } = initFiltering(filterElements);
 
 const applySearching = initSearching(
-  sampleTable.container.querySelector('[name="search"]')
+  sampleTable.container.querySelector('[name="search"]'),
 );
 
 const appRoot = document.querySelector("#app");
@@ -95,12 +94,12 @@ async function init() {
   updateIndexes(
     {
       searchBySeller: sampleTable.container.querySelector(
-        '[data-name="searchBySeller"]'
+        '[data-name="searchBySeller"]',
       ),
     },
     {
       searchBySeller: indexes.sellers,
-    }
+    },
   );
 }
 

@@ -7,7 +7,7 @@ export function initFiltering(elements) {
           option.textContent = name;
           option.value = name;
           return option;
-        })
+        }),
       );
     });
   };

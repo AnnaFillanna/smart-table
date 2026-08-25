@@ -31,6 +31,10 @@ container.append(root.container);
     onAction();
   });
 
+  container.addEventListener("reset", () => {
+    onAction();
+  });
+
   container.addEventListener("submit", (event) => {
     event.preventDefault();
     onAction(event.submitter);

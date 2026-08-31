@@ -1,62 +1,74 @@
-import { cloneTemplate } from "../lib/utils.js";
+import {classNames as cx, create, deepClone, setContent} from "../lib/utils.js";
 
-/**
- * Инициализирует таблицу и вызывает коллбэк при любых изменениях и нажатиях на кнопки
- *
- * @param {Object} settings
- * @param {(action: HTMLButtonElement | undefined) => void} onAction
- * @returns {{container: Node, elements: *, render: render}}
- */
-export function initTable(settings, onAction) {
-  const { tableTemplate, rowTemplate, before, after } = settings;
-  const root = cloneTemplate(tableTemplate);
-  const container = document.createElement("div");
 
-  const beforeElements = before.map((templateId) => {
-    return cloneTemplate(templateId).container;
-  });
+export function Column({ name, value, role = 'cell' }) {
+    return create('div', {
+        class: 'table-column',
+        role,
+        data: { name }
+    }, value);
+}
 
-  const afterElements = after.map((templateId) => {
-    return cloneTemplate(templateId).container;
-  });
+export function Row({ columns, className = '' }) {
+    return create('div', {
+        class: cx('table-row', className),
+        role: 'row'
+    }, ...columns);
+}
 
-root.container.prepend(...beforeElements);
-root.container.append(...afterElements);
-container.append(root.container);
+export function Cell({ column, data, name, value }) {
+    return column.tag ? create(column.tag, { column, data, name, value }) : value;
+}
 
-  // @todo: #1.2 —  вывести дополнительные шаблоны до и после таблицы
+function RowGroup({ rows = [] }) {
+    return create('div', {
+        class: 'table-content',
+        data: { name: 'rows' },
+        role: 'rowgroup'
+    }, ...rows);
+}
 
-  // @todo: #1.3 —  обработать события и вызвать onAction()
-  container.addEventListener("input", () => {
-    onAction();
-  });
+function Table({ schema, className = '', sections = [] }) {
+    return create('div', {
+        name,
+        class: cx('table', className),
+        style: { '--columns': schema.map(({ size }) => size ?? '1fr').join(' ') },
+        role: 'table'
+    }, ...sections);
+}
 
-  container.addEventListener("reset", () => {
-    onAction();
-  });
+export function initTable({ schema, options = {}, plugins = [] }) {
+    const content = RowGroup({});
+    const internalSchema = deepClone(schema);
+    const before = [];
+    const after = [];
 
-  container.addEventListener("submit", (event) => {
-    event.preventDefault();
-    onAction(event.submitter);
-  });
-  const render = (data) => {
-    const nextRows = data.map((customer) => {
-      const row = cloneTemplate(rowTemplate);
-
-      row.elements.date.textContent = customer.date;
-      row.elements.customer.textContent = customer.customer;
-      row.elements.seller.textContent = customer.seller;
-      row.elements.total.textContent = customer.total;
-
-      return row.container;
+    plugins.forEach(plugin => {
+        const insert = plugin(internalSchema);
+        switch(insert.type) {
+            case 'before': before.push(insert.element); break;
+            case 'after': after.push(insert.element); break;
+            default: break;
+        }
     });
 
-    root.elements.rows.replaceChildren(...nextRows);
-  };
+    const table = Table({
+        name: options.name,
+        className: options.className,
+        schema: internalSchema,
+        sections: [...before, content, ...after]
+    });
 
-  return {
-    container: container,
-    elements: root.elements,
-    render,
-  };
+    const render = (data) => {
+        const rows = data.map(row => create(Row, {
+            columns: internalSchema.map(column => create(Column, {
+                ...column,
+                value: Cell({ column, data: row, name: column.name, value: row[column.name]})
+            }))
+        }));
+
+        setContent(content, rows);
+    }
+
+    return { container: table, render }
 }

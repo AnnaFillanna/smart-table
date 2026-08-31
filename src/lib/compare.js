@@ -203,7 +203,7 @@ const defaultRules = [
     'skipEmptyTargetValues',
     'failOnEmptySource',
     'arrayAsRange',
-    'caseInsensitiveStringIncludes',
+    'stringIncludes',
     'exactEquality'
 ];
 

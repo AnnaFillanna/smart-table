@@ -1,33 +1,88 @@
-import { sortMap } from "../lib/sort.js";
+import {sortMap} from "../lib/sort.js";
+import {Column, Row} from "./table.js";
+import {capitalize, create} from "../lib/utils.js";
 
-export function initSorting(columns) {
-  return (query, state, action) => {
+function Header({ columns }) {
+    return create(Row, {
+        className: 'header-row',
+        columns
+    });
+}
+
+function HeaderColumn({ value }) {
+    return create(Column, {
+        role: 'columnheader',
+        value
+    })
+}
+
+function Sortable({ name, onClick }) {
+    return create('button', {
+        className: 'icon',
+        type: 'button',
+        name: 'sort',
+        dataset: {
+            field: 'date',
+            value: 'none',
+            name: `sortBy${capitalize(name)}`,
+            ariaLabel: `Sort by ${name}`
+        },
+        onClick
+    });
+}
+
+export function initSorting(onUpdate) {
     let field = null;
     let order = null;
+    let buttons = [];
 
-    if (action && action.name === "sort") {
-      field = action.dataset.field;
-      order = sortMap[action.dataset.value];
-      action.dataset.value = order;
+    const onClick = (event) => {
+        event.stopPropagation();
+        const action = event.target;
 
-      columns.forEach((column) => {
-        if (column !== action) {
-          column.dataset.value = "none";
-        }
-      });
-    } else {
-      const selected = [...columns].find(
-        (column) => column.dataset.value !== "none",
-      );
+        action.dataset.value = sortMap[action.dataset.value];
+        field = action.dataset.field;
+        order = action.dataset.value;
 
-      if (selected) {
-        field = selected.dataset.field;
-        order = selected.dataset.value;
-      }
+        buttons.forEach(btn => {
+            if (btn.dataset.field !== action.dataset.field) {
+                btn.dataset.value = 'none';
+            }
+        });
+
+        void onUpdate();
     }
 
-    const sort = field && order !== "none" ? `${field}:${order}` : null;
+    const apply = (query) => {
+        const sort = (field && order !== 'none') ? `${field}:${order}` : null;
 
-    return sort ? Object.assign({}, query, { sort }) : query;
-  };
+        return sort ? Object.assign({}, query, { sort }) : query;
+    }
+
+    const plugin = (schema) => {
+        const header = Header({
+            columns: schema.map(column => {
+                let hCell = column.label ?? column.name;
+                if (column.sort) {
+                    const sortButton = Sortable({ name: column.name, onClick });
+                    buttons.push(sortButton);
+
+                    hCell = create('div', {
+                            class: 'sortable'
+                        },
+                        hCell,
+                        sortButton
+                    );
+                }
+
+                return HeaderColumn({
+                    value: hCell
+                });
+            })
+        });
+
+        return { type: 'before', element: header };
+    }
+
+    return { plugin, apply };
 }

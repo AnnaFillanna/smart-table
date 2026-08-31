@@ -2,6 +2,16 @@
 
 A modular, plugin-based table component system with full CRUD functionality, built with vanilla JavaScript and CSS Grid.
 
+## Live Demo
+
+[View Live Demo](https://annafillanna.github.io/smart-table/)
+
+## Preview
+
+![Smart Table Preview](./smart-table-preview.png)
+
+## Architecture Overview
+
 ## Architecture Overview
 
 The system follows a **plugin-based architecture** where the core table functionality is extended through independent, composable plugins. This design promotes modularity, reusability, and maintainability.

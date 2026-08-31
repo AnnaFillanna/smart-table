@@ -6,10 +6,6 @@ A modular, plugin-based table component system with full CRUD functionality, bui
 
 [View Live Demo](https://annafillanna.github.io/smart-table/)
 
-## Preview
-
-![Smart Table Preview](./smart-table-preview.png)
-
 ## Architecture Overview
 
 ## Architecture Overview
